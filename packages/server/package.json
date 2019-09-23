@@ -5,6 +5,7 @@
   "author": "@kraftwerk28 <kefrchik3@gmail.com>",
   "license": "MIT",
   "scripts": {
+    "build": "webpack --mode=production",
     "watch": "webpack --mode=development -w",
     "lint": "eslint --ignore-path ../../.gitignore ./",
     "lint:fix": "eslint --ignore-path ../../.gitignore --fix ./"
@@ -12,6 +13,7 @@
   "dependencies": {
     "dotenv": "^8.1.0",
     "fastify": "^2.8.0",
+    "fastify-gql": "^1.5.0",
     "pg": "^7.12.1"
   },
   "devDependencies": {

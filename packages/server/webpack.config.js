@@ -8,10 +8,13 @@ module.exports = (_env, { mode }) => {
   const cfg = {
     target: 'node',
     mode,
-    entry: resolve('./'),
+    entry: {
+      index: resolve('./'),
+      tests: resolve('./tests')
+    },
     output: {
       path: resolve('dist/'),
-      filename: 'index.js'
+      filename: '[name].js'
     },
     node: {
       __dirname: false,

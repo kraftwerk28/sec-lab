@@ -1,172 +1,80 @@
 import { Pool } from 'pg'
 
-const where = conditions => {
-  let clause = ''
-  const args = []
-  let i = 1
-  for (const key in conditions) {
-    let value = conditions[key]
-    let condition
-    if (typeof value === 'number') {
-      condition = `${key} = $${i}`
-    } else if (typeof value === 'string') {
-      if (value.startsWith('>=')) {
-        condition = `${key} >= $${i}`
-        value = value.substring(2)
-      } else if (value.startsWith('<=')) {
-        condition = `${key} <= $${i}`
-        value = value.substring(2)
-      } else if (value.startsWith('<>')) {
-        condition = `${key} <> $${i}`
-        value = value.substring(2)
-      } else if (value.startsWith('>')) {
-        condition = `${key} > $${i}`
-        value = value.substring(1)
-      } else if (value.startsWith('<')) {
-        condition = `${key} < $${i}`
-        value = value.substring(1)
-      } else if (value.includes('*') || value.includes('?')) {
-        value = value.replace(/\*/g, '%').replace(/\?/g, '_')
-        condition = `${key} LIKE $${i}`
-      } else {
-        condition = `${key} = $${i}`
-      }
-    }
-    i++
-    args.push(value)
-    clause = clause ? `${clause} AND ${condition}` : condition
+// const Q_OPS = ['>=', '<=', '<>', '>', '<']
+const Q_CREATORS = {
+  SELECT: qb => {
+    const q = [
+      `SELECT ${$seq(qb._values.length)}`,
+      `FROM ${qb._table}`
+    ]
+    if (qb._whereClause) q.push(`WHERE ${qb._whereClause}`)
+    return q.join(' ')
+  },
+  INSERT: qb => {
+    const q = [
+      `INSERT INTO ${qb._table}`,
+      `(${qb._keys.join(', ')})`,
+      `VALUES (${$seq(qb._values.length)})`
+    ]
+    if (qb._whereClause) q.push(`WHERE ${qb._whereClause}`)
+    return q.join(' ')
   }
-  return { clause, args }
 }
 
-const MODE_ROWS = 0
-const MODE_VALUE = 1
-const MODE_ROW = 2
-const MODE_COL = 3
-const MODE_COUNT = 4
+const $seq = cnt => Array(cnt).fill().map((_, idx) => '$' + (idx + 1)).join(', ')
 
-class Cursor {
-  constructor(database, table) {
-    this.database = database
-    this.table = table
-    this.cols = null
-    this.rows = null
-    this.rowCount = 0
-    this.ready = false
-    this.mode = MODE_ROWS
-    this.whereClause = undefined
-    this.columns = ['*']
-    this.args = []
-    this.orderBy = undefined
+const constructQuery = qb => Q_CREATORS[qb._opertaion](qb)
+
+class QueryBuilder {
+  constructor(dbConfig) {
+    this._pool = new Pool(dbConfig)
+    this._client = null
+    this._table = undefined
+    this._opertaion = undefined
+    this._whereClause = ''
+    this._values = []
+    this._keys = []
+    this._query = ''
   }
 
-  resolve(result) {
-    const { rows, fields, rowCount } = result
-    this.rows = rows
-    this.cols = fields
-    this.rowCount = rowCount
+  select(table, values) {
+    this._table = table
+    this._opertaion = 'SELECT'
+    this._values = values
+    this._query = constructQuery(this)
+    return this
   }
 
   where(conditions) {
-    const { clause, args } = where(conditions)
-    this.whereClause = clause
-    this.args = args
+    this._whereClause = conditions
+    this._query = constructQuery(this)
     return this
   }
 
-  fields(list) {
-    this.columns = list
+  insert() {
+    this._opertaion = 'INSERT'
     return this
   }
 
-  value() {
-    this.mode = MODE_VALUE
+  update() {
     return this
   }
 
-  row() {
-    this.mode = MODE_ROW
-    return this
-  }
-
-  col(name) {
-    this.mode = MODE_COL
-    this.columnName = name
-    return this
-  }
-
-  count() {
-    this.mode = MODE_COUNT
-    return this
-  }
-
-  order(name) {
-    this.orderBy = name
-    return this
-  }
-
-  then(callback) {
-    // TODO: store callback to pool
-    const { mode, table, columns, args } = this
-    const { whereClause, orderBy, columnName } = this
-    const fields = columns.join(', ')
-    let sql = `SELECT ${fields} FROM ${table}`
-    if (whereClause) sql += ` WHERE ${whereClause}`
-    if (orderBy) sql += ` ORDER BY ${orderBy}`
-    this.database.query(sql, args,  (err, res) => {
-      this.resolve(res)
-      const { rows, cols } = this
-      if (mode === MODE_VALUE) {
-        const col = cols[0]
-        const row = rows[0]
-        callback(row[col.name])
-      } else if (mode === MODE_ROW) {
-        callback(rows[0])
-      } else if (mode === MODE_COL) {
-        const col = []
-        for (const row of rows) {
-          col.push(row[columnName])
-        }
-        callback(col)
-      } else if (mode === MODE_COUNT) {
-        callback(this.rowCount)
-      } else {
-        callback(rows)
-      }
-    })
-    return this
-  }
-}
-
-class Database {
-  constructor(config, logger) {
-    this.pool = new Pool(config)
-    this.config = config
-    this.logger = logger
-  }
-
-  query(sql, values, callback) {
-    if (typeof values === 'function') {
-      callback = values
-      values = []
-    }
-    const startTime = new Date().getTime()
-    console.log({ sql, values })
-    this.pool.query(sql, values, (err, res) => {
-      const endTime = new Date().getTime()
-      const executionTime = endTime - startTime
-      console.log(`Execution time: ${executionTime}`)
-      if (callback) callback(err, res)
+  connect() {
+    return this._pool.connect().then(client => {
+      this._client = client
+      return this._client
     })
   }
 
-  select(table) {
-    return new Cursor(this, table)
+  exec() {
+    // TODO: implement
+    this._client.query(this._query, this._queryValues)
   }
 
-  close() {
-    this.pool.end()
+  end() {
+    return this._pool.end()
   }
 }
 
-export const open = (config, logger) => new Database(config, logger)
+export default QueryBuilder
