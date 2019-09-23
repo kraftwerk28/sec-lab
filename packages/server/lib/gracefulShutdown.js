@@ -1,13 +1,19 @@
 const promises = []
 
-export function registerCallback(cb) {
+export function registerCallback(cb, callback = () => {}) {
   promises.push(() => new Promise((res) => {
-    cb(() => res())
+    cb(() => {
+      res()
+      callback()
+    })
   }))
 }
 
-export function registerPromise(p) {
-  promises.push(p)
+export function registerPromise(p, callback = () => {}) {
+  promises.push(async () => {
+    await p()
+    callback()
+  })
 }
 
 const signals = ['SIGINT', 'SIGTERM']

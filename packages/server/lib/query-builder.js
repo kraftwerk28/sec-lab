@@ -41,18 +41,19 @@ class QueryBuilder {
     this._table = table
     this._opertaion = 'SELECT'
     this._values = values
-    this._query = constructQuery(this)
     return this
   }
 
   where(conditions) {
     this._whereClause = conditions
-    this._query = constructQuery(this)
     return this
   }
 
-  insert() {
+  insert(table, data) {
     this._opertaion = 'INSERT'
+    this._table = table
+    this._keys = Object.keys(data)
+    this._values = Object.values(data)
     return this
   }
 
@@ -68,11 +69,19 @@ class QueryBuilder {
   }
 
   exec() {
-    // TODO: implement
-    this._client.query(this._query, this._queryValues)
+    this._query = constructQuery(this)
+    return this._client.query(this._query, this._values)
+      .catch((e) => Promise.reject(e))
+  }
+  
+  execRows() {
+    this._query = constructQuery(this)
+    return this._client.query(this._query, this._values)
+      .catch(e => Promise.reject(e))
   }
 
   end() {
+    this._client.release()
     return this._pool.end()
   }
 }

@@ -1,30 +1,22 @@
 import fastify from 'fastify'
 
 import { registerPromise } from './gracefulShutdown'
+import { connect } from './db'
+import * as routes from './router'
 
 const app = fastify({})
 
-const { PORT } = process.env
+const { SERVER_PORT } = process.env
 
-app.get('/', async (req, res) => {
-  res.status(200).headers({
-    'content-type': 'application/json'
-  }).send({ hello: 'world' })
-})
+app.get('/', routes.index)
+app.post('/add-airport', routes.addAirport)
+app.post('/add-ticket', routes.addTicket)
+app.post('/add-client', routes.addClient)
+app.post('/add-flight', routes.addFlight)
 
-app.post('/test', (req, res) => {
-  const { query } = req.body
-  return res.graphql(query)
-})
+Promise.all([
+  app.listen(SERVER_PORT),
+  connect()
+]).then(() => console.log('Server working'))
 
-app
-  .listen(PORT)
-  .then(() => {
-    console.log(`Server listening on :${PORT}`)
-  })
-  .catch((e) => {
-    console.log(e)
-    process.exit(1)
-  })
-
-registerPromise(app.close.bind(app))
+registerPromise(app.close.bind(app), () => console.log('Server closed...'))
