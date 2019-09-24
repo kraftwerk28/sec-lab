@@ -8,7 +8,8 @@
     "build": "webpack --mode=production",
     "watch": "webpack --mode=development -w",
     "lint": "eslint --ignore-path ../../.gitignore ./",
-    "lint:fix": "eslint --ignore-path ../../.gitignore --fix ./"
+    "lint:fix": "eslint --ignore-path ../../.gitignore --fix ./",
+    "nodemon": "nodemon dist/"
   },
   "dependencies": {
     "dotenv": "^8.1.0",
