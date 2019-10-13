@@ -3,25 +3,40 @@ import { Pool } from 'pg'
 // const Q_OPS = ['>=', '<=', '<>', '>', '<']
 const Q_CREATORS = {
   SELECT: qb => {
-    const q = [
-      `SELECT ${$seq(qb._values.length)}`,
-      `FROM ${qb._table}`
-    ]
+    let valPlaceholder = ''
+    if (qb._values === '*' || qb._values.includes('*')) {
+      valPlaceholder = '*'
+      qb._values = []
+    } else {
+      valPlaceholder = $seq(qb._values.length)
+    }
+    const q = [`SELECT ${valPlaceholder}`, `FROM ${qb._table}`]
     if (qb._whereClause) q.push(`WHERE ${qb._whereClause}`)
     return q.join(' ')
   },
   INSERT: qb => {
+    let valPlaceholder = ''
+    if (qb._values === '*' || qb._values.includes('*')) {
+      valPlaceholder = '*'
+      qb._values = []
+    } else {
+      valPlaceholder = $seq(qb._values.length)
+    }
     const q = [
       `INSERT INTO ${qb._table}`,
       `(${qb._keys.join(', ')})`,
-      `VALUES (${$seq(qb._values.length)})`
+      `VALUES (${valPlaceholder})`
     ]
     if (qb._whereClause) q.push(`WHERE ${qb._whereClause}`)
     return q.join(' ')
   }
 }
 
-const $seq = cnt => Array(cnt).fill().map((_, idx) => '$' + (idx + 1)).join(', ')
+const $seq = cnt =>
+  Array(cnt)
+    .fill()
+    .map((_, idx) => '$' + (idx + 1))
+    .join(', ')
 
 const constructQuery = qb => Q_CREATORS[qb._opertaion](qb)
 
@@ -62,26 +77,43 @@ class QueryBuilder {
   }
 
   connect() {
-    return this._pool.connect().then(client => {
-      this._client = client
-      return this._client
-    })
+    return this._pool.connect().then(
+      client => {
+        this._client = client
+        return this._client
+      },
+      err => {
+        console.error('Failed creating pool client.', err)
+        process.exit(1)
+      }
+    )
   }
 
   exec() {
     this._query = constructQuery(this)
-    return this._client.query(this._query, this._values)
-      .catch((e) => Promise.reject(e))
+    return this._client.query(this._query, this._values).catch(e => {
+      this._client.release()
+      return Promise.reject(e)
+    })
   }
-  
+
   execRows() {
+    return this.exec().then(r => r.rows)
+    // this._query = constructQuery(this)
+    // return this._client.query(this._query, this._values)
+    //   .catch(e => Promise.reject(e))
+  }
+
+  flushQuery() {
     this._query = constructQuery(this)
-    return this._client.query(this._query, this._values)
-      .catch(e => Promise.reject(e))
   }
 
   end() {
-    this._client.release()
+    try {
+      this._client.release()
+    } catch (e) {
+      console.log('Client already released, skipping...')
+    }
     return this._pool.end()
   }
 }

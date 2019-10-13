@@ -1,0 +1,18 @@
+version: '3'
+services:
+  server:
+    build: 'packages/server/'
+    environment:
+      NODE_ENV: 'production'
+    depends_on:
+      - pg
+    ports:
+      - 8080:80
+  pg:
+    image: postgres
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+      - ./packages/server/db:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_USER: 'sec_lab'
+      POSTGRES_PASSWORD: '12345'
