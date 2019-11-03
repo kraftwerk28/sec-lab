@@ -1,16 +1,16 @@
-'use strict';
+'use strict'
 
-const { Pool } = require('pg');
+const { Pool } = require('pg')
 
 const pool = new Pool({
-  host: 'localhost',
-  port: 5432,
-  database: 'tickets_service_2',
-  user: 'postgres',
-  password: '790000'
-});
+  host: process.env.DB_HOST,
+  port: process.env.DB_POST,
+  database: process.env.DB_DATABASE,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD
+})
 
-const listQuery = 'SELECT * FROM ticket';
+const listQuery = 'SELECT * FROM ticket'
 
 const byIDQuery = `
   SELECT id_ticket, price, time, seat,
@@ -26,10 +26,10 @@ const byIDQuery = `
   JOIN airports to_a
   ON t.to_airp = to_a.airport_id
   WHERE id_ticket = $1
-`;
+`
 
-const list = () => pool.query(listQuery).then(data => data.rows); 
+const list = () => pool.query(listQuery).then(data => data.rows)
 
-const byID = id => pool.query(byIDQuery, [id]).then(data => data.rows);
+const byID = id => pool.query(byIDQuery, [id]).then(data => data.rows)
 
-module.exports = { list, byID };
+module.exports = { list, byID }
