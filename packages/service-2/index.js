@@ -1,22 +1,26 @@
-'use strict';
+'use strict'
 
-const http = require('http');
-const url = require('url');
+const { resolve } = require('path')
+require('dotenv').config({ path: resolve(process.cwd(), '../../', '.env') })
+const http = require('http')
+const url = require('url')
 
-const { list, byID } = require(__dirname + '/db.js');
+const { list, byID } = require('./db')
+
+const { SERVICE2_PORT } = process.env
+const PORT = SERVICE2_PORT || 8000
 
 const server = http.createServer((req, res) => {
-  const pathname = url.parse(req.url, true).pathname;
+  const pathname = url.parse(req.url, true).pathname
 
-  if (pathname === '/price-list/' | pathname === '/price-list') {
-    list().then(tickets => res.end(JSON.stringify(tickets)));
+  if ((pathname === '/price-list/') | (pathname === '/price-list')) {
+    list().then(tickets => res.end(JSON.stringify(tickets)))
   } else if (pathname.match(/\/details\/.*/)) {
-    const id = pathname.slice(9);
-    byID(id).then(tickets => res.end(JSON.stringify(tickets)));
+    const id = pathname.slice(9)
+    byID(id).then(tickets => res.end(JSON.stringify(tickets)))
   } else {
-    res.end('404');
+    res.writeHead(400).end()
   }
+})
 
-});
-
-server.listen(8001);
+server.listen(PORT)
