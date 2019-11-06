@@ -16,13 +16,6 @@ CREATE TABLE IF NOT EXISTS clients (
   registered_time TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS flights (
-  flight_id SERIAL PRIMARY KEY NOT NULL,
-  plane_model VARCHAR(32),
-  departure_time TIMESTAMP,
-  arrival_time TIMESTAMP
-);
-
 CREATE TABLE IF NOT EXISTS airports (
   airport_id SERIAL PRIMARY KEY NOT NULL,
   airport_name VARCHAR(64),
@@ -30,8 +23,18 @@ CREATE TABLE IF NOT EXISTS airports (
   city VARCHAR(32)
 );
 
+CREATE TABLE IF NOT EXISTS flights (
+  flight_id SERIAL PRIMARY KEY NOT NULL,
+  airport_id INT NOT NULL
+    REFERENCES airports(airport_id)
+    ON DELETE CASCADE,
+  plane_model VARCHAR(32),
+  departure_time TIMESTAMP,
+  arrival_time TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS tickets (
-  ticket_id SERIAL PRIMARY KEY NOT NULL,
+  id_ticket SERIAL PRIMARY KEY NOT NULL,
   class ticket_class NOT NULL,
   sub_class ticket_type,
   ordered_by INT NOT NULL
