@@ -9,18 +9,36 @@ const { list, byID } = require('./db')
 
 const { SERVICE2_PORT } = process.env
 const PORT = SERVICE2_PORT || 8000
+const priceListRE = /^\/price-list(?:\/(\d+))?(?:\/*)$/
+const detailsRE = /^\/details\/([^\s\/]+)(?:\/*)$/
 
 const server = http.createServer((req, res) => {
   const pathname = url.parse(req.url, true).pathname
 
-  if ((pathname === '/price-list/') | (pathname === '/price-list')) {
-    list().then(tickets => res.end(JSON.stringify(tickets)))
-  } else if (pathname.match(/\/details\/.*/)) {
-    const id = pathname.slice(9)
-    byID(id).then(tickets => res.end(JSON.stringify(tickets)))
-  } else {
-    res.writeHead(400).end()
+  const priceListMatch = pathname.match(priceListRE)
+  const detailsMatch = pathname.match(detailsRE)
+
+  if (priceListMatch) {
+    const [, page = 0] = priceListMatch
+    list(page).then(tickets =>
+      res
+        .writeHead(200, { 'content-type': 'application/json' })
+        .end(JSON.stringify(tickets))
+    )
+    return
   }
+
+  if (detailsMatch) {
+    const [, id] = detailsMatch
+    byID(id).then(tickets =>
+      res
+        .writeHead(200, { 'content-type': 'application/json' })
+        .end(JSON.stringify(tickets[0] ? tickets[0] : {}))
+    )
+    return
+  }
+
+  res.writeHead(400).end()
 })
 
-server.listen(PORT)
+server.listen(PORT, () => console.log('Listening on port :' + PORT))
