@@ -1,0 +1,19 @@
+{
+  "name": "scripts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "fill-main-db.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "fill:main": "node fill-main-db.js",
+    "fill:s2": "node fill-service2-db.js"
+  },
+  "keywords": [],
+  "author": "kraftwerk28 <kefirchik3@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "knex": "^0.20.1",
+    "pg": "^7.12.1"
+  }
+}

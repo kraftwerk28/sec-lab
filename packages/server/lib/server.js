@@ -1,4 +1,5 @@
 import fastify from 'fastify'
+import fastifyProxy from 'fastify-http-proxy'
 
 import { registerPromise } from './gracefulShutdown'
 import { connect } from './db'
@@ -6,7 +7,27 @@ import * as routes from './router'
 
 const app = fastify()
 
+const { SERVICE1_PORT, SERVICE2_PORT } = process.env
+
+app.register(fastifyProxy, {
+  upstream: `http://127.0.0.1:${SERVICE1_PORT}`,
+  prefix: '/s1',
+  preHandler(req, res, next) {
+    console.log('Service 1 proxy...')
+    return next()
+  }
+})
+app.register(fastifyProxy, {
+  upstream: `http://127.0.0.1:${SERVICE2_PORT}`,
+  prefix: '/s2',
+  preHandler(req, res, next) {
+    console.log('Service 2 proxy...')
+    return next()
+  }
+})
+
 const { SERVER_PORT } = process.env
+const PORT = SERVER_PORT || 8080
 
 app.get('/', routes.index)
 app.get('/get-airports', routes.getAirports)
@@ -25,8 +46,8 @@ app.get('/test/:id1/:id2', (req, res) => {
 })
 
 app
-  .listen({ host: '0.0.0.0', port: SERVER_PORT })
-  .then(() => console.log(`Server working on port :${SERVER_PORT}`))
+  .listen({ host: '0.0.0.0', port: PORT })
+  .then(() => console.log(`Server working on port :${PORT}`))
 
 connect().then(() => console.log('Connected to database...'))
 
