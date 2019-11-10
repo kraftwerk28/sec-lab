@@ -65,3 +65,5 @@ dist/
 .idea/
 
 scripts/**/*.dump
+
+db-data/
