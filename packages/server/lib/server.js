@@ -14,18 +14,14 @@ app.register(fastifyProxy, {
   upstream: `http://127.0.0.1:${SERVICE1_PORT}`,
   prefix: '/s1',
   preHandler: redis.s1CheckCache,
-  replyOptions: {
-    onResponse: redis.s1Cache
-  }
+  replyOptions: { onResponse: redis.s1Cache }
 })
 
 app.register(fastifyProxy, {
   upstream: `http://127.0.0.1:${SERVICE2_PORT}`,
   prefix: '/s2',
-  preHandler(req, res, next) {
-    console.log('Service 2 proxy...')
-    return next()
-  }
+  preHandler: redis.s2CheckCache,
+  replyOptions: { onResponse: redis.s2Cache }
 })
 
 const { SERVER_PORT } = process.env

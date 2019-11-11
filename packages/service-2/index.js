@@ -9,6 +9,8 @@ const { list, byID } = require('./db')
 
 const { SERVICE2_PORT } = process.env
 const PORT = SERVICE2_PORT || 8000
+const RES_HEADERS = { 'content-type': 'application/json' }
+
 const priceListRE = /^\/price-list(?:\/(\d+))?(?:\/*)$/
 const detailsRE = /^\/details\/([^\s\/]+)(?:\/*)$/
 
@@ -21,9 +23,7 @@ const server = http.createServer((req, res) => {
   if (priceListMatch) {
     const [, page = 0] = priceListMatch
     list(page).then(tickets =>
-      res
-        .writeHead(200, { 'content-type': 'application/json' })
-        .end(JSON.stringify(tickets))
+      res.writeHead(200, RES_HEADERS).end(JSON.stringify(tickets))
     )
     return
   }
@@ -32,7 +32,7 @@ const server = http.createServer((req, res) => {
     const [, id] = detailsMatch
     byID(id).then(tickets =>
       res
-        .writeHead(200, { 'content-type': 'application/json' })
+        .writeHead(200, RES_HEADERS)
         .end(JSON.stringify(tickets[0] ? tickets[0] : {}))
     )
     return
