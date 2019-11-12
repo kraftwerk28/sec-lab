@@ -12,6 +12,7 @@ const Q_CREATORS = {
     }
     const q = [`SELECT ${valPlaceholder}`, `FROM ${qb._table}`]
     if (qb._whereClause) q.push(`WHERE ${qb._whereClause}`)
+    q.push('LIMIT 100')
     return q.join(' ')
   },
   INSERT: qb => {

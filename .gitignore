@@ -63,3 +63,7 @@ typings/
 dist/
 .vscode/
 .idea/
+
+scripts/**/*.dump
+
+db-data/
