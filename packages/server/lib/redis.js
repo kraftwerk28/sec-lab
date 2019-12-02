@@ -21,9 +21,10 @@ export const s1CheckCache = async (req, res, next) => {
   if (!query) {
     res.code(400).send()
   }
-  const exists = await rExists(query)
+  const KEY = `s1.${query}`
+  const exists = await rExists(KEY)
   if (exists) {
-    res.code(200).send(Buffer.from(await rGet(query)))
+    res.code(200).send(Buffer.from(await rGet(KEY)))
   } else {
     return next()
   }
@@ -33,11 +34,12 @@ export const s1Cache = async (request, reply, res) => {
   // retrieve key for lookup in Redis
   const url = parse(request.url, true)
   const { query } = url.query
+  const KEY = `s1.${query}`
 
   // weird header is added, IDK why
   reply.type('application/json').removeHeader('transfer-encoding')
 
-  const exists = await rExists(query)
+  const exists = await rExists(KEY)
   if (exists) {
     // pipe response to client, if cached
     reply.code(200).send(res)
@@ -48,7 +50,7 @@ export const s1Cache = async (request, reply, res) => {
       .on('data', ch => data.push(ch))
       .on('end', () => {
         const body = Buffer.concat(data)
-        rSet(query, body)
+        rSet(KEY, body)
         reply.code(200).send(body)
       })
   }

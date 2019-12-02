@@ -1,3 +1,8 @@
+DROP TABLE clients CASCADE;
+DROP TABLE airports CASCADE;
+DROP TABLE flights CASCADE;
+DROP TABLE tickets CASCADE;
+
 CREATE TYPE ticket_class AS ENUM ('economy', 'business', 'first_class');
 CREATE TYPE ticket_type AS ENUM (
   'W', 'S', 'B', 'K', 'L', 'M', 'N', 'V', 'G',
@@ -43,6 +48,9 @@ CREATE TABLE IF NOT EXISTS tickets (
   flight_id INT NOT NULL
     REFERENCES flights(flight_id)
     ON DELETE CASCADE,
+  from_airp INT,
+  to_airp INT,
+  time TIMESTAMP,
   price FLOAT,
   booked BOOLEAN NOT NULL,
   seat VARCHAR(8)

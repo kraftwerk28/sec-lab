@@ -38,6 +38,8 @@ app.post('/add-ticket', r.addTicket)
 app.post('/add-client', r.addClient)
 app.post('/add-flight', r.addFlight)
 
+app.post('/search', r.search)
+
 app
   .listen({ host: '0.0.0.0', port: PORT })
   .then(() => console.log(`Server working on port :${PORT}`))
