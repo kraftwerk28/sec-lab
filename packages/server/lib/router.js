@@ -1,9 +1,11 @@
 import { URL, URLSearchParams } from 'url'
+
 import fetch from 'node-fetch'
 
 import * as db from './db'
+import { collectBody } from './utils'
 
-const { SERVER_PORT } = process.env
+const { SERVER_PORT, AUTH_PORT } = process.env
 const PORT = SERVER_PORT || 8080
 const S2_LIST_LIMIT = 120
 
@@ -16,7 +18,7 @@ const s1Search = async req => {
   const s1Query = Object.keys(clauses)
     .map(key => `${key}:${clauses[key]}`)
     .join(',')
-  const url = new URL('http://localhost')
+  const url = new URL('http://127.0.0.1')
   const query = new URLSearchParams({
     query: s1Query
   })
@@ -32,7 +34,7 @@ const s1Search = async req => {
 const s2Search = async req => {
   const makePageRequest = async (req, array, curPage) => {
     if (array.length > S2_LIST_LIMIT) return array
-    const url = new URL('http://localhost')
+    const url = new URL('http://127.0.0.1')
     url.port = PORT
     url.pathname = '/s2/price-list/' + curPage
     const data = await fetch(url, { method: 'GET' }).then(d => d.json())
@@ -65,7 +67,7 @@ const s2Search = async req => {
 }
 
 const mainSearch = async req => {
-  const url = new URL('http://localhost')
+  const url = new URL('http://127.0.0.1')
   url.port = PORT
   url.pathname = '/get-tickets'
 
@@ -89,24 +91,6 @@ const mainSearch = async req => {
       return ticket[field].toString().match(new RegExp(clauses[clause], 'i'))
     })
   })
-}
-
-const filterData = (req, data) => {
-  const clauses = req.body
-
-  return data.filter(ticket =>
-    // iterate over each clause in QUERY
-    Object.keys(clauses).some(clause => {
-      if (!CLAUSE_MAP[clause]) return false
-      // map QUERY clause to database specific FIELD
-      return CLAUSE_MAP[clause].some(field => {
-        // if MAPPED field of ticket matches clause in QUERY
-        // for example `from` in clause means `from_name` OR `from_airp` in TICKET
-        if (!ticket[field]) return false
-        return ticket[field].toString().match(new RegExp(clauses[clause], 'i'))
-      })
-    })
-  )
 }
 
 export const index = (req, res) => {
@@ -174,4 +158,49 @@ export const search = async (req, res) => {
     .catch(e => {
       res.code(400).send(dbErr(e))
     })
+}
+
+export const withAuth = async (req, res, next) => {
+  console.log('With auth...')
+  const body = await collectBody(req)
+  const { token } = body
+  if (!token) {
+    res.writeHead(401).end('Unauthorized b/c of token')
+    return
+  }
+  const reqUrl = new URL('http://127.0.0.1')
+  reqUrl.port = AUTH_PORT
+  reqUrl.pathname = '/verify'
+  reqUrl.searchParams.append('token', token)
+  
+  const authRes = await fetch(reqUrl, { method: 'GET' })
+  if (authRes.status === 401) {
+    res.writeHead(401).end('Unauthorized b/c of wrong token')
+  } else {
+    return next()
+  }
+}
+
+export const login = async (req, res) => {
+  const reqUrl = new URL('http://127.0.0.1')
+  reqUrl.port = AUTH_PORT
+  reqUrl.pathname = '/token'
+  const { user, pass } = req.body
+
+  const tokenRes = await fetch(reqUrl, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ user, pass })
+  })
+  
+  if (tokenRes.status === 200) {
+    res.code(200).send(tokenRes.body)
+  } else {
+    res.code(401).send('Unauthorized')
+  }
+}
+
+export const authTest = async () => {
+  console.log('bruh')
+  return 'Some secret data...'
 }
