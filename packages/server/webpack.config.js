@@ -4,7 +4,7 @@ const { resolve } = require('path')
 const WNE = require('webpack-node-externals')
 
 module.exports = (_env, { mode }) => {
-  // const DEV = mode !== 'development'
+  const DEV = mode === 'development'
   const cfg = {
     target: 'node',
     mode,
@@ -21,7 +21,8 @@ module.exports = (_env, { mode }) => {
       __filename: false
     },
     externals: [WNE()],
-    stats: 'minimal'
+    stats: 'minimal',
+    devtool: DEV ? 'source-map' : false
   }
   return cfg
 }

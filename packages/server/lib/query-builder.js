@@ -44,7 +44,6 @@ const constructQuery = qb => Q_CREATORS[qb._opertaion](qb)
 class QueryBuilder {
   constructor(dbConfig) {
     this._pool = new Pool(dbConfig)
-    this._client = null
     this._table = undefined
     this._opertaion = undefined
     this._whereClause = ''
@@ -79,9 +78,8 @@ class QueryBuilder {
 
   connect() {
     return this._pool.connect().then(
-      client => {
-        this._client = client
-        return this._client
+      () => {
+        return this._pool
       },
       err => {
         console.error('Failed creating pool client.', err)
@@ -92,8 +90,7 @@ class QueryBuilder {
 
   exec() {
     this._query = constructQuery(this)
-    return this._client.query(this._query, this._values).catch(e => {
-      this._client.release()
+    return this._pool.query(this._query, this._values).catch(e => {
       return Promise.reject(e)
     })
   }
@@ -110,11 +107,6 @@ class QueryBuilder {
   }
 
   end() {
-    try {
-      this._client.release()
-    } catch (e) {
-      console.log('Client already released, skipping...')
-    }
     return this._pool.end()
   }
 }
