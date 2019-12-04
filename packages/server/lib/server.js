@@ -6,9 +6,11 @@ import { connect } from './db'
 import * as r from './router'
 import * as redis from './redis'
 
-const app = fastify()
+const app = fastify({ logger: process.env.NODE_ENV === 'development' && false })
 
-const { SERVICE1_PORT, SERVICE2_PORT } = process.env
+const { SERVICE1_PORT, SERVICE2_PORT, RESERV_PORT } = process.env
+
+app.use('/auth', r.withAuth)
 
 app.register(fastifyProxy, {
   upstream: `http://127.0.0.1:${SERVICE1_PORT}`,
@@ -24,8 +26,14 @@ app.register(fastifyProxy, {
   replyOptions: { onResponse: redis.s2Cache }
 })
 
+app.register(fastifyProxy, {
+  upstream: `http://127.0.0.1:${RESERV_PORT}`,
+  prefix: '/auth/reserve'
+})
+
 const { SERVER_PORT } = process.env
 const PORT = SERVER_PORT || 8080
+
 
 app.get('/', r.index)
 app.get('/get-airports', r.getAirports)
@@ -39,6 +47,10 @@ app.post('/add-client', r.addClient)
 app.post('/add-flight', r.addFlight)
 
 app.post('/search', r.search)
+
+app.post('/login', r.login)
+
+app.post('/auth/test', r.authTest)
 
 app
   .listen({ host: '0.0.0.0', port: PORT })

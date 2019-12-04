@@ -3,13 +3,15 @@ extends:
 env:
   node: true
   es6: true
+parser: babel-eslint
 parserOptions:
-  ecmaVersion: 8
-  ecmaFeatures:
-    experimentalObjectRestSpread: true
+  ecmaVersion: 6
   sourceType: module
 rules:
   semi: [error, never]
   indent: [error, 2]
-  quotes: [error, single]
+  quotes: 
+    - error
+    - single
+    - allowTemplateLiterals: true
   no-console: off
