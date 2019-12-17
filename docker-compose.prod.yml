@@ -4,11 +4,11 @@ services:
     build: packages/server/
     environment:
       NODE_ENV: production
-    # depends_on:
-    #   - pg
-    #   - redis
-    # ports:
-    #   - 8080:8080
+    depends_on:
+      - pg
+      - redis
+    ports:
+      - 8080:8080
     env_file: .env
     network_mode: host
 
@@ -19,9 +19,7 @@ services:
     env_file: .env
     environment:
       NODE_ENV: production
-    network_mode: host
-    # ports:
-    #   - 8001:8001
+
   service2:
     build:
       context: packages/service-2
@@ -29,9 +27,7 @@ services:
     env_file: .env
     environment:
       NODE_ENV: production
-    network_mode: host
-    # ports:
-    #   - 8001:8001
+
   auth:
     build:
       context: packages/auth
@@ -39,7 +35,6 @@ services:
     env_file: .env
     environment:
       NODE_ENV: production
-    network_mode: host
 
   reservation:
     build:
@@ -48,4 +43,12 @@ services:
     env_file: .env
     environment:
       NODE_ENV: production
-    network_mode: host
+
+  postgres:
+    image: postgres:alpine
+    environment:
+      POSTGRES_USER: kraftwerk28
+      POSTGRES_PASSWORD: 271828
+
+  redis:
+    image: redis:alpine

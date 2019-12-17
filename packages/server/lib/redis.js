@@ -4,7 +4,7 @@ import { promisify } from 'util'
 import { registerCallback } from './gracefulShutdown'
 
 const client = redis.createClient({
-  host: process.env.REDIS_HOST
+  host: process.env.REDIS_HOST || 'localhost'
 })
 
 const rExists = promisify(client.exists.bind(client))

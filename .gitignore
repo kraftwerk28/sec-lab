@@ -67,3 +67,6 @@ dist/
 scripts/**/*.dump
 
 db-data/
+.vscode/
+.idea/
+*.dump

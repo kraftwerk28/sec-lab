@@ -8,3 +8,7 @@ export const collectBody = (req, isJSON = true) => new Promise((resolve, reject)
     })
     .on('error', reject)
 })
+
+export const protocol = () => ['0', 'true'].includes(process.env.SSL)
+  ? 'https'
+  : 'http'

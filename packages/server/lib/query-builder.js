@@ -97,9 +97,6 @@ class QueryBuilder {
 
   execRows() {
     return this.exec().then(r => r.rows)
-    // this._query = constructQuery(this)
-    // return this._client.query(this._query, this._values)
-    //   .catch(e => Promise.reject(e))
   }
 
   flushQuery() {
@@ -107,7 +104,7 @@ class QueryBuilder {
   }
 
   end() {
-    return this._pool.end()
+    return this._pool.end
   }
 }
 

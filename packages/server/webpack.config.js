@@ -1,7 +1,7 @@
 'use strict'
 
 const { resolve } = require('path')
-const WNE = require('webpack-node-externals')
+const externals = require('webpack-node-externals')
 
 module.exports = (_env, { mode }) => {
   const DEV = mode === 'development'
@@ -20,7 +20,7 @@ module.exports = (_env, { mode }) => {
       __dirname: false,
       __filename: false
     },
-    externals: [WNE()],
+    externals: [externals()],
     stats: 'minimal',
     devtool: DEV ? 'source-map' : false
   }

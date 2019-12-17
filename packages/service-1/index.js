@@ -1,7 +1,6 @@
 'use strict'
 
-const { resolve } = require('path')
-require('dotenv').config({ path: resolve(process.cwd(), '../../', '.env') })
+require('../shared/env')
 const http = require('http')
 const url = require('url')
 
@@ -38,3 +37,12 @@ const server = http.createServer((req, res) => {
 })
 
 server.listen(PORT, () => console.log(`Listening on port :${PORT}`))
+
+const signals = ['SIGTERM', 'SIGINT']
+signals.forEach(s => {
+  process.on(s, () => {
+    server.close(() => {
+      process.exit(0)
+    })
+  })
+})

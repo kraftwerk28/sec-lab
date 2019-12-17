@@ -1,0 +1,12 @@
+FROM node:alpine AS prod_deps
+WORKDIR /opt/deps
+ARG NODE_ENV=production
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit
+
+FROM node:alpine AS deploy
+WORKDIR /opt/app
+ARG NODE_ENV=production
+COPY --from=prod_deps /opt/deps ./
+COPY ./ ./
+CMD node index.js

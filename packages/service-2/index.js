@@ -1,7 +1,6 @@
 'use strict'
 
-const { resolve } = require('path')
-require('dotenv').config({ path: resolve(process.cwd(), '../../', '.env') })
+require('../shared/env')
 const http = require('http')
 const url = require('url')
 
@@ -12,7 +11,7 @@ const PORT = SERVICE2_PORT || 8000
 const RES_HEADERS = { 'content-type': 'application/json' }
 
 const priceListRE = /^\/price-list(?:\/(\d+))?(?:\/*)$/
-const detailsRE = /^\/details\/([^\s\/]+)(?:\/*)$/
+const detailsRE = /^\/details\/([^\s/]+)(?:\/*)$/
 
 const server = http.createServer((req, res) => {
   const pathname = url.parse(req.url, true).pathname
@@ -42,3 +41,11 @@ const server = http.createServer((req, res) => {
 })
 
 server.listen(PORT, () => console.log('Listening on port :' + PORT))
+
+;['SIGTERM', 'SIGINT'].forEach(s => {
+  process.on(s, () => {
+    server.close(() => {
+      process.exit(0)
+    })
+  })
+})
