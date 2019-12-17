@@ -1,6 +1,6 @@
 'use strict'
-const { resolve } = require('path')
-require('dotenv').config({ path: resolve(process.cwd(), '../../', '.env') })
+
+require('../shared/env')
 const http = require('http')
 const qs = require('querystring')
 
@@ -38,6 +38,7 @@ const routes = [
     url: '/token',
     handler: async (req, res) => {
       const { user, pass } = await getBody(req, true)
+      console.log({ user, pass })
 
       if (user === AUTH_USER && pass === AUTH_PASS) {
         const token = tokenStore.makeToken()
@@ -80,3 +81,11 @@ const httpHandler = async (req, res) => {
 
 const server = http.createServer(httpHandler)
 server.listen(PORT, () => console.log('Auth server on :' + PORT))
+
+;['SIGTERM', 'SIGINT'].forEach(s => {
+  process.on(s, () => {
+    server.close(() => {
+      process.exit(0)
+    })
+  })
+})

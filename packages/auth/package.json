@@ -9,8 +9,5 @@
   },
   "keywords": [],
   "author": "kraftwerk28 <kefirchik3@gmail.com>",
-  "license": "ISC",
-  "dependencies": {
-    "dotenv": "^8.2.0"
-  }
+  "license": "ISC"
 }

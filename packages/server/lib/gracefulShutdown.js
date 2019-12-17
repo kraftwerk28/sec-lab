@@ -20,7 +20,7 @@ const signals = ['SIGINT', 'SIGTERM']
 
 signals.forEach(SIG => {
   process.on(SIG, () => {
-    console.log('\nStarting graceful shutdown...')
+    console.log(`\nStarting graceful shutdown with ${promises.length} agents...`)
     Promise.all(promises.map(fn => fn())).then(() => {
       console.log('Gracefully shutted down.')
       process.exit(0)

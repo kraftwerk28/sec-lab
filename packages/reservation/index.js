@@ -1,7 +1,6 @@
 'use strict'
 
-const { resolve } = require('path')
-require('dotenv').config({ path: resolve(process.cwd(), '../../', '.env') })
+require('../shared/env')
 const app = require('fastify')()
 const { addReserv, getReserv } = require('./db')
 
@@ -27,3 +26,11 @@ app.get('/reservations', (req, res) => {
 app
   .listen({ host: '0.0.0.0', port: PORT })
   .then(() => console.log(`Reservation server working on port :${PORT}`))
+
+;['SIGTERM', 'SIGINT'].forEach(s => {
+  process.on(s, () => {
+    app.close(() => {
+      process.exit(0)
+    })
+  })
+})

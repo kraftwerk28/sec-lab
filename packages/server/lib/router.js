@@ -3,9 +3,10 @@ import { URL, URLSearchParams } from 'url'
 import fetch from 'node-fetch'
 
 import * as db from './db'
-import { collectBody } from './utils'
+import { collectBody, protocol } from './utils'
+import { get, post } from './fetch'
 
-const { SERVER_PORT, AUTH_PORT } = process.env
+const { SERVER_PORT, AUTH_PORT, LOCALHOST } = process.env
 const PORT = SERVER_PORT || 8080
 const S2_LIST_LIMIT = 120
 
@@ -18,13 +19,11 @@ const s1Search = async req => {
   const s1Query = Object.keys(clauses)
     .map(key => `${key}:${clauses[key]}`)
     .join(',')
-  const url = new URL('http://127.0.0.1')
-  const query = new URLSearchParams({
-    query: s1Query
-  })
+
+  const url = new URL(`${protocol()}://${LOCALHOST}`)
   url.port = PORT
   url.pathname = '/s1/search'
-  url.search = query
+  url.search = new URLSearchParams({ query: s1Query })
 
   return fetch(url, {
     method: 'GET'
@@ -37,7 +36,7 @@ const s2Search = async req => {
     const url = new URL('http://127.0.0.1')
     url.port = PORT
     url.pathname = '/s2/price-list/' + curPage
-    const data = await fetch(url, { method: 'GET' }).then(d => d.json())
+    const data = await fetch(url).then(d => d.json())
     if (data.length) {
       return makePageRequest(req, array.concat(data), curPage + 1)
     } else {
@@ -161,21 +160,18 @@ export const search = async (req, res) => {
 }
 
 export const withAuth = async (req, res, next) => {
-  console.log('With auth...')
-  const body = await collectBody(req)
-  const { token } = body
-  if (!token) {
-    res.writeHead(401).end('Unauthorized b/c of token')
-    return
+  if (!(req.body || {}).token) {
+    res.code(400).send('No token given')
   }
+  const { token } = req.body
   const reqUrl = new URL('http://127.0.0.1')
   reqUrl.port = AUTH_PORT
   reqUrl.pathname = '/verify'
   reqUrl.searchParams.append('token', token)
   
-  const authRes = await fetch(reqUrl, { method: 'GET' })
+  const authRes = await get(reqUrl, { responseType: null })
   if (authRes.status === 401) {
-    res.writeHead(401).end('Unauthorized b/c of wrong token')
+    res.code(401).send('Unauthorized b/c of wrong token')
   } else {
     return next()
   }
@@ -187,12 +183,11 @@ export const login = async (req, res) => {
   reqUrl.pathname = '/token'
   const { user, pass } = req.body
 
-  const tokenRes = await fetch(reqUrl, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ user, pass })
-  })
-  
+  const tokenRes = await fetch(
+    reqUrl,
+    { method: 'POST', body: JSON.stringify({ user, pass }) }
+  )
+
   if (tokenRes.status === 200) {
     res.code(200).send(tokenRes.body)
   } else {
