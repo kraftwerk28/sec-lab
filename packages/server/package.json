@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "start": "run-p watch nodemon",
-    "nodemon": "nodemon dist/",
+    "nodemon": "NODE_ENV=development nodemon dist/",
     "build": "webpack --mode=production",
     "watch": "webpack --mode=development --watch",
     "lint": "eslint --ignore-path ../../.gitignore ./",

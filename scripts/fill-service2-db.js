@@ -1,29 +1,29 @@
-'use strict'
+'use strict';
 
-require('dotenv').config({ path: process.cwd() + '/../.env' })
-const knex = require('knex')
-const { randomBytes } = require('crypto')
+require('dotenv').config({ path: process.cwd() + '/../.env' });
+const knex = require('knex');
+const { randomBytes } = require('crypto');
 
-const randRng = (a, b) => a + Math.floor(Math.random() * (b - a))
+const randRng = (a, b) => a + Math.floor(Math.random() * (b - a));
 
 function randomStr(size = 16) {
-  return randomBytes(size).toString('hex')
+  return randomBytes(size).toString('hex');
 }
 
-const { DB_HOST, DB_PORT, S2_DATABASE, DB_USER, DB_PASSWORD } = process.env
+const { DB_HOST, DB_PORT, S2_DATABASE, DB_USER, DB_PASSWORD } = process.env;
 const connectionString =
   `postgres://${DB_USER}:${DB_PASSWORD}@` +
-  `${DB_HOST}:${DB_PORT}/${S2_DATABASE}`
-console.log(connectionString)
+  `${DB_HOST}:${DB_PORT}/${S2_DATABASE}`;
+console.log(connectionString);
 
-const RECORDS_COUNT = 25_000
+const RECORDS_COUNT = 25_000;
 
 const kn = knex({
   client: 'pg',
   connection: {
     connectionString
   }
-})
+});
 
 const airports = Array(RECORDS_COUNT)
   .fill()
@@ -36,7 +36,7 @@ const airports = Array(RECORDS_COUNT)
         city: `city_name_${index}`
       }
     )
-  )
+  );
 
 const tickets = Array(RECORDS_COUNT)
   .fill()
@@ -52,31 +52,31 @@ const tickets = Array(RECORDS_COUNT)
         seat: index % 100
       }
     )
-  )
+  );
 async function main() {
-  await kn('ticket').del()
-  await kn('airports').del()
+  await kn('ticket').del();
+  await kn('airports').del();
 
   await kn.raw(`
     ALTER SEQUENCE airports_airport_id_seq RESTART
-  `)
+  `);
 
   for (let i = 0; i < airports.length; i += 1e3) {
     await kn('airports')
       .insert(airports.slice(i, i + 1e3))
-      .then(_ => {}, console.error)
+      .then(_ => {}, console.error);
   }
   for (let i = 0; i < tickets.length; i += 1e3) {
     await kn('ticket')
       .insert(tickets.slice(i, i + 1e3))
-      .then(_ => {}, console.error)
+      .then(_ => {}, console.error);
   }
 
-  console.log('Succseeded!')
-  kn.destroy()
+  console.log('Succseeded!');
+  kn.destroy();
 }
 
 main().catch(reason => {
-  console.error(reason)
-  process.exit(1)
-})
+  console.error(reason);
+  process.exit(1);
+});

@@ -1,6 +1,6 @@
-'use strict'
+'use strict';
 
-const { Pool } = require('pg')
+const { Pool } = require('pg');
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -8,7 +8,7 @@ const pool = new Pool({
   database: process.env.S1_DATABASE,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD
-})
+});
 
 const query = `
   SELECT id_ticket, price, time, seat,
@@ -28,7 +28,7 @@ const query = `
     (to_a.airport_name ~* $2 OR $2 ISNULL) AND
     (time = $3::timestamp OR $3 ISNULL) AND
     (price = $4 OR $4 ISNULL)
-`
+`;
 
 const select = conditions =>
   pool
@@ -38,6 +38,6 @@ const select = conditions =>
       conditions.time,
       conditions.maxPrice
     ])
-    .then(data => data.rows)
+    .then(data => data.rows);
 
-module.exports = select
+module.exports = select;

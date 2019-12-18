@@ -1,48 +1,48 @@
-'use strict'
+'use strict';
 
-require('../shared/env')
-const http = require('http')
-const url = require('url')
+require('../shared/env');
+const http = require('http');
+const url = require('url');
 
-const select = require('./db')
+const select = require('./db');
 
-const { SERVICE1_PORT } = process.env
-const PORT = SERVICE1_PORT || 8000
-const RESPONSE_TIMEOUT = 1000
-const runDelayed = fn => setTimeout(fn, RESPONSE_TIMEOUT)
+const { SERVICE1_PORT } = process.env;
+const PORT = SERVICE1_PORT || 8000;
+const RESPONSE_TIMEOUT = 1000;
+const runDelayed = fn => setTimeout(fn, RESPONSE_TIMEOUT);
 
 const server = http.createServer((req, res) => {
-  const parsedURL = url.parse(req.url, true)
-  const { query } = parsedURL.query
+  const parsedURL = url.parse(req.url, true);
+  const { query } = parsedURL.query;
   if (parsedURL.pathname !== '/search' || !query) {
     runDelayed(() => {
-      res.writeHead(400).end()
-    })
-    return
+      res.writeHead(400).end();
+    });
+    return;
   }
 
   // format query=key1:val1,key2:val2
   const parsedQuery = query
     .split(',')
     .map(pair => pair.trim().split(':'))
-    .reduce((acc, [k, v]) => ((acc[k] = v), acc), {})
+    .reduce((acc, [k, v]) => ((acc[k] = v), acc), {});
 
   select(parsedQuery).then(tickets =>
     runDelayed(() => {
       res
         .writeHead(200, { 'content-type': 'application/json' })
-        .end(JSON.stringify(tickets))
+        .end(JSON.stringify(tickets));
     })
-  )
-})
+  );
+});
 
-server.listen(PORT, () => console.log(`Listening on port :${PORT}`))
+server.listen(PORT, () => console.log(`Listening on port :${PORT}`));
 
-const signals = ['SIGTERM', 'SIGINT']
+const signals = ['SIGTERM', 'SIGINT'];
 signals.forEach(s => {
   process.on(s, () => {
     server.close(() => {
-      process.exit(0)
-    })
-  })
-})
+      process.exit(0);
+    });
+  });
+});

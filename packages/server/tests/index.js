@@ -1,1 +1,1 @@
-import './query-builder.test'
+import './query-builder.test';
