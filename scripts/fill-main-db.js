@@ -1,29 +1,29 @@
-'use strict'
+'use strict';
 
-require('dotenv').config({ path: process.cwd() + '/../.env' })
-const knex = require('knex')
-const { randomBytes } = require('crypto')
+require('dotenv').config({ path: process.cwd() + '/../.env' });
+const knex = require('knex');
+const { randomBytes } = require('crypto');
 
 function randomStr(size = 16) {
-  return randomBytes(size).toString('hex')
+  return randomBytes(size).toString('hex');
 }
 
-const { DB_HOST, DB_PORT, DB_DATABASE, DB_USER, DB_PASSWORD } = process.env
+const { DB_HOST, DB_PORT, DB_DATABASE, DB_USER, DB_PASSWORD } = process.env;
 const connectionString =
   `postgres://${DB_USER}:${DB_PASSWORD}@` +
-  `${DB_HOST}:${DB_PORT}/${DB_DATABASE}`
-console.log(connectionString)
+  `${DB_HOST}:${DB_PORT}/${DB_DATABASE}`;
+console.log(connectionString);
 
-const RECORDS_COUNT = 3e4
+const RECORDS_COUNT = 3e4;
 
-const randRng = (a, b) => a + Math.floor(Math.random() * (b - a))
+const randRng = (a, b) => a + Math.floor(Math.random() * (b - a));
 
 const kn = knex({
   client: 'pg',
   connection: {
     connectionString
   }
-})
+});
 
 const airports = Array(RECORDS_COUNT)
   .fill()
@@ -36,7 +36,7 @@ const airports = Array(RECORDS_COUNT)
         city: `city_name_${index}`
       }
     )
-  )
+  );
 
 const flights = Array(RECORDS_COUNT)
   .fill()
@@ -50,7 +50,7 @@ const flights = Array(RECORDS_COUNT)
         departure_time: `12.31.2000`
       }
     )
-  )
+  );
 
 const clients = Array(RECORDS_COUNT / 50)
   .fill()
@@ -65,7 +65,7 @@ const clients = Array(RECORDS_COUNT / 50)
         registered_time: `01.01.1970`
       }
     )
-  )
+  );
 
 const tickets = Array(RECORDS_COUNT)
   .fill()
@@ -85,47 +85,47 @@ const tickets = Array(RECORDS_COUNT)
         seat: 'A1'
       }
     )
-  )
+  );
 async function main() {
-  await kn('clients').del()
-  await kn('airports').del()
+  await kn('clients').del();
+  await kn('airports').del();
 
   await kn.raw(`
     ALTER SEQUENCE airports_airport_id_seq RESTART
-  `)
+  `);
   await kn.raw(`
     ALTER SEQUENCE flights_flight_id_seq RESTART
-  `)
+  `);
   await kn.raw(`
     ALTER SEQUENCE clients_client_id_seq RESTART
-  `)
+  `);
   await kn.raw(`
     ALTER SEQUENCE tickets_id_ticket_seq RESTART
-  `)
+  `);
 
   for (let i = 0; i < airports.length; i += 1e3) {
     await kn('airports')
       .insert(airports.slice(i, i + 1e3))
-      .then(_ => {}, console.error)
+      .then(_ => {}, console.error);
   }
   for (let i = 0; i < flights.length; i += 1e3) {
     await kn('flights')
       .insert(flights.slice(i, i + 1e3))
-      .then(_ => {}, console.error)
+      .then(_ => {}, console.error);
   }
   for (let i = 0; i < clients.length; i += 1e3) {
     await kn('clients')
       .insert(clients.slice(i, i + 1e3))
-      .then(_ => {}, console.error)
+      .then(_ => {}, console.error);
   }
   for (let i = 0; i < tickets.length; i += 1e3) {
     await kn('tickets')
       .insert(tickets.slice(i, i + 1e3))
-      .then(_ => {}, console.error)
+      .then(_ => {}, console.error);
   }
 
-  console.log('Succseeded!')
-  kn.destroy()
+  console.log('Succseeded!');
+  kn.destroy();
 }
 
-main()
+main();

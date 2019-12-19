@@ -1,6 +1,6 @@
-'use strict'
+'use strict';
 
-const { Pool } = require('pg')
+const { Pool } = require('pg');
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -8,14 +8,14 @@ const pool = new Pool({
   database: process.env.S2_DATABASE,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD
-})
+});
 
 const listQuery = `
   SELECT *
   FROM ticket
   LIMIT 100
   OFFSET 100 * $1
-`
+`;
 
 const byIDQuery = `
   SELECT id_ticket, price, time, seat,
@@ -32,10 +32,10 @@ const byIDQuery = `
     ON t.to_airp = to_a.airport_id
   WHERE id_ticket = $1
   LIMIT 100
-`
+`;
 
-const list = page => pool.query(listQuery, [page]).then(data => data.rows)
+const list = page => pool.query(listQuery, [page]).then(data => data.rows);
 
-const byID = id => pool.query(byIDQuery, [id]).then(data => data.rows)
+const byID = id => pool.query(byIDQuery, [id]).then(data => data.rows);
 
-module.exports = { list, byID }
+module.exports = { list, byID };

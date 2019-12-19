@@ -1,2 +1,2 @@
-import './lib/env'
-import './lib/server'
+import './lib/env';
+import './lib/server';

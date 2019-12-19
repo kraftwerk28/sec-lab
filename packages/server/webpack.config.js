@@ -1,10 +1,10 @@
-'use strict'
+'use strict';
 
-const { resolve } = require('path')
-const WNE = require('webpack-node-externals')
+const { resolve } = require('path');
+const externals = require('webpack-node-externals');
 
 module.exports = (_env, { mode }) => {
-  const DEV = mode === 'development'
+  const DEV = mode === 'development';
   const cfg = {
     target: 'node',
     mode,
@@ -20,9 +20,9 @@ module.exports = (_env, { mode }) => {
       __dirname: false,
       __filename: false
     },
-    externals: [WNE()],
+    externals: [externals()],
     stats: 'minimal',
     devtool: DEV ? 'source-map' : false
-  }
-  return cfg
-}
+  };
+  return cfg;
+};

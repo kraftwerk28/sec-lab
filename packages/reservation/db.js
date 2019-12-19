@@ -1,4 +1,4 @@
-const { Pool } = require('pg')
+const { Pool } = require('pg');
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -6,9 +6,9 @@ const pool = new Pool({
   database: process.env.DB_DATABASE,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD
-})
+});
 
-const withQuery = (q, data) => pool.query(q, data)
+const withQuery = (q, data) => pool.query(q, data);
 
 exports.addReserv = (clientId, ticketId, time, service) =>
   withQuery(
@@ -18,9 +18,9 @@ exports.addReserv = (clientId, ticketId, time, service) =>
       VALUES ($1, $2, $3, $4)
     `,
     [clientId, ticketId, time, service]
-  )
+  );
 
 exports.getReserv = () =>
   withQuery(
     `SELECT * FROM reservations`
-  )
+  );

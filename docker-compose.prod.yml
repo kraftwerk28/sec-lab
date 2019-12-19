@@ -1,0 +1,48 @@
+version: '3'
+services:
+  main:
+    image: kraftwerk28/sec_lab_main
+    environment:
+      NODE_ENV: production
+    deploy:
+      replicas: 2
+    depends_on:
+      - pg
+      - redis
+    ports:
+      - 8080:8080
+    env_file: .env
+    network_mode: host
+
+  service1:
+    image: kraftwerk28/sec_lab_service1
+    env_file: .env
+    environment:
+      NODE_ENV: production
+
+  service2:
+    image: kraftwerk28/sec_lab_service2
+    env_file: .env
+    environment:
+      NODE_ENV: production
+
+  auth:
+    image: kraftwerk28/sec_lab_auth
+    env_file: .env
+    environment:
+      NODE_ENV: production
+
+  reservation:
+    image: kraftwerk28/sec_lab_reservation
+    env_file: .env
+    environment:
+      NODE_ENV: production
+
+  # postgres:
+  #   image: postgres:alpine
+  #   environment:
+  #     POSTGRES_USER: kraftwerk28
+  #     POSTGRES_PASSWORD: 271828
+
+  redis:
+    image: redis:alpine

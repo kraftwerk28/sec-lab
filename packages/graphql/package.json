@@ -1,0 +1,24 @@
+{
+  "name": "sec_lab-graphql",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "NODE_ENV=development nodemon ./"
+  },
+  "keywords": [],
+  "author": "kraftwerk28 <kefirchik3@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "fastify": "^2.11.0",
+    "fastify-gql": "^2.0.3",
+    "graphql": "^14.5.8",
+    "knex": "^0.20.4",
+    "node-fetch": "^2.6.0",
+    "pg": "^7.15.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
+  }
+}
