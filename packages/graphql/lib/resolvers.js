@@ -1,12 +1,22 @@
 const db = require('./db');
 
 exports.ticketResolver = async (parent, { id }) => {
-  const tickets = await db
-    .knMain('tickets')
-    .select('*')
-    .where({ id_ticket: id })
-    .limit(10)
-    .catch(console.error);
+  let tickets;
+  if (id) {
+    tickets = await db
+      .knMain('tickets')
+      .select('*')
+      .where({ id_ticket: id ? id : undefined })
+      .limit(10)
+      .catch(console.error);
+  } else {
+    tickets = await db
+      .knMain('tickets')
+      .select('*')
+      .where({ id_ticket: id ? id : undefined })
+      .limit(10)
+      .catch(console.error);
+  }
   return tickets;
 };
 
@@ -44,4 +54,26 @@ exports.clientFlightsResolver = async client => {
     .where({ 'clients.client_id': client.client_id })
     .limit(10);
   return flights;
+};
+
+exports.ticketMutation = async (_, args) => {
+  const q = await db.knMain('tickets')
+    .insert({
+      class: args.class,
+      flight_id: args.flightId,
+      from_airp: args.from_airp,
+      to_airp: args.to_airp,
+      time: args.time,
+      price: args.price,
+      ordered_by: args.ordered_by,
+      booked: args.booked
+    });
+  return q.length > 0;
+};
+
+exports.ticketDeletion = async (_, args) => {
+  const q = await db.knMain('tickets')
+    .where({ id_ticket: args.ticket_id })
+    .del();
+  return q.length > 0;
 };

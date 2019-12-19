@@ -2,8 +2,11 @@ version: '3'
 services:
   main:
     build: packages/server/
+    # image: kraftwerk28/sec_lab_main
     environment:
       NODE_ENV: production
+    # deploy:
+    #   replicas: 2
     # depends_on:
     #   - pg
     #   - redis
@@ -16,6 +19,7 @@ services:
     build:
       context: packages/service-1
       dockerfile: ../../Dockerfile.common
+    # image: kraftwerk28/sec_lab_service1
     env_file: .env
     environment:
       NODE_ENV: production
@@ -26,6 +30,7 @@ services:
     build:
       context: packages/service-2
       dockerfile: ../../Dockerfile.common
+    # image: kraftwerk28/sec_lab_service2
     env_file: .env
     environment:
       NODE_ENV: production
@@ -36,6 +41,7 @@ services:
     build:
       context: packages/auth
       dockerfile: ../../Dockerfile.common
+    # image: kraftwerk28/sec_lab_auth
     env_file: .env
     environment:
       NODE_ENV: production
@@ -45,7 +51,12 @@ services:
     build:
       context: packages/reservation
       dockerfile: ../../Dockerfile.common
+    # image: kraftwerk28/sec_lab_reservation
     env_file: .env
     environment:
       NODE_ENV: production
+    network_mode: host
+
+  redis:
+    image: redis
     network_mode: host

@@ -51,5 +51,5 @@ const ClientType = new gql.GraphQLObjectType({
 module.exports = {
   FlightType,
   ClientType,
-  TicketType
+  TicketType,
 };
